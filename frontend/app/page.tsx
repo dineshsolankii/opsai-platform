@@ -1,97 +1,176 @@
 'use client';
 
-import { useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, type ReactNode } from 'react';
 import WritingAssistant from '@/app/components/WritingAssistant';
 import MeetingSummarizer from '@/app/components/MeetingSummarizer';
 import ReportGenerator from '@/app/components/ReportGenerator';
 import TaskManager from '@/app/components/TaskManager';
-import { FileText, Users, BarChart2, CheckSquare, Menu, X, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { FileText, Users, BarChart2, CheckSquare, Menu, X, Sparkles } from 'lucide-react';
 
-const App = () => {
-  const [activeAgent, setActiveAgent] = useState('writing-assistant');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const router = useRouter();
+interface Agent {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  gradient: string;
+  description: string;
+  component: ReactNode;
+}
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-    }
-  }, [router]);
+const agents: Agent[] = [
+  {
+    id: 'writing-assistant',
+    label: 'Writing Assistant',
+    icon: FileText,
+    gradient: 'from-violet-500 to-purple-600',
+    description: 'Emails, announcements & social posts',
+    component: <WritingAssistant />,
+  },
+  {
+    id: 'meeting-summarizer',
+    label: 'Meeting Summarizer',
+    icon: Users,
+    gradient: 'from-blue-500 to-cyan-500',
+    description: 'Extract insights from transcripts',
+    component: <MeetingSummarizer />,
+  },
+  {
+    id: 'report-generator',
+    label: 'Report Generator',
+    icon: BarChart2,
+    gradient: 'from-emerald-500 to-teal-500',
+    description: 'Structured reports & summaries',
+    component: <ReportGenerator />,
+  },
+  {
+    id: 'task-manager',
+    label: 'Task Manager',
+    icon: CheckSquare,
+    gradient: 'from-orange-500 to-amber-500',
+    description: 'AI-powered task prioritization',
+    component: <TaskManager />,
+  },
+];
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    router.push('/login');
-  };
+export default function App() {
+  const [activeId, setActiveId] = useState('writing-assistant');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const renderAgent = () => {
-    switch (activeAgent) {
-      case 'writing-assistant':
-        return <WritingAssistant />;
-      case 'meeting-summarizer':
-        return <MeetingSummarizer />;
-      case 'report-generator':
-        return <ReportGenerator />;
-      case 'task-manager':
-        return <TaskManager />;
-      default:
-        return <WritingAssistant />;
-    }
-  };
-
-  const NavItem = ({ agent, icon, label }: { agent: string; icon: ReactNode; label: string }) => (
-    <Button
-      variant={activeAgent === agent ? 'secondary' : 'ghost'}
-      className="w-full justify-start"
-      onClick={() => setActiveAgent(agent)}>
-      {icon}
-      {isSidebarOpen && <span className="ml-4">{label}</span>}
-    </Button>
-  );
+  const active = agents.find((a) => a.id === activeId)!;
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
-      {/* Sidebar */}
+    <div className="flex h-screen overflow-hidden">
+      {/* Ambient background orbs */}
+      <div className="orb orb-1" />
+      <div className="orb orb-2" />
+      <div className="orb orb-3" />
+
+      {/* ── Sidebar ── */}
       <aside
-        className={`bg-card border-r transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
-        <div className="flex items-center justify-between h-20 px-4 border-b">
-          {isSidebarOpen && (
-            <h1 className="text-2xl font-bold">OpsAI</h1>
+        className={`glass-sidebar relative z-10 flex flex-col shrink-0 transition-all duration-300 ${
+          sidebarOpen ? 'w-[240px]' : 'w-[68px]'
+        }`}
+      >
+        {/* Logo row */}
+        <div className="flex items-center gap-3 h-16 px-4 border-b border-white/5">
+          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/30 shrink-0">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          {sidebarOpen && (
+            <span className="font-bold text-base bg-gradient-to-r from-violet-300 to-indigo-300 bg-clip-text text-transparent tracking-tight">
+              OpsAI
+            </span>
           )}
-          <Button variant="ghost" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2">
-            {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-          </Button>
+          <button
+            className="ml-auto p-1.5 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/8 transition-colors"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Toggle sidebar"
+          >
+            {sidebarOpen ? <X size={15} /> : <Menu size={15} />}
+          </button>
         </div>
-        <nav className="p-4 space-y-2">
-          <NavItem agent="writing-assistant" icon={<FileText className="h-5 w-5" />} label="Writing Assistant" />
-          <NavItem agent="meeting-summarizer" icon={<Users className="h-5 w-5" />} label="Meeting Summarizer" />
-          <NavItem agent="report-generator" icon={<BarChart2 className="h-5 w-5" />} label="Report Generator" />
-          <NavItem agent="task-manager" icon={<CheckSquare className="h-5 w-5" />} label="Task Manager" />
+
+        {/* Navigation */}
+        <nav className="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          {sidebarOpen && (
+            <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-white/25 px-3 pt-2 pb-1.5">
+              AI Agents
+            </p>
+          )}
+          {agents.map(({ id, label, icon: Icon, gradient, description }) => {
+            const isActive = activeId === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setActiveId(id)}
+                className={`w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all duration-200 group text-left ${
+                  isActive ? 'bg-white/8' : 'hover:bg-white/5'
+                }`}
+              >
+                <div
+                  className={`flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br ${gradient} shrink-0 shadow-sm transition-transform group-hover:scale-105`}
+                >
+                  <Icon className="w-4 h-4 text-white" />
+                </div>
+                {sidebarOpen && (
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-[13px] font-medium truncate ${
+                        isActive ? 'text-white/95' : 'text-white/60'
+                      }`}
+                    >
+                      {label}
+                    </p>
+                    <p className="text-[10px] text-white/30 truncate">{description}</p>
+                  </div>
+                )}
+                {isActive && sidebarOpen && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />
+                )}
+              </button>
+            );
+          })}
         </nav>
-        <div className="absolute bottom-0 w-full p-4 border-t">
-          <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-            <LogOut className="h-5 w-5" />
-            {isSidebarOpen && <span className="ml-4">Logout</span>}
-          </Button>
-        </div>
+
+        {/* Footer */}
+        {sidebarOpen && (
+          <div className="p-4 border-t border-white/5">
+            <p className="text-[9px] text-white/20 text-center leading-relaxed">
+              Powered by OpenRouter
+              <br />
+              GPT-4o-mini
+            </p>
+          </div>
+        )}
       </aside>
 
-      {/* Main Content */}
-      <div className="flex flex-col flex-1">
-        <header className="flex items-center justify-between h-20 px-8 border-b">
+      {/* ── Main ── */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Top bar */}
+        <header className="glass-header relative z-10 flex items-center gap-4 h-16 px-6 shrink-0">
+          <div
+            className={`flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br ${active.gradient} shadow-md shrink-0`}
+          >
+            <active.icon className="w-4 h-4 text-white" />
+          </div>
           <div>
-            <h2 className="text-3xl font-bold">AI Content & Operations Assistant</h2>
-            <p className="text-muted-foreground">Your multi-agent AI productivity platform</p>
+            <h1 className="text-[15px] font-semibold text-white/90 leading-none">
+              {active.label}
+            </h1>
+            <p className="text-[11px] text-white/35 mt-0.5">{active.description}</p>
+          </div>
+          <div className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/8 border border-emerald-500/18">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[10px] font-semibold text-emerald-400 tracking-wide uppercase">
+              AI Ready
+            </span>
           </div>
         </header>
-        <main className="flex-1 p-8 overflow-y-auto">
-          {renderAgent()}
+
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto p-5">
+          {active.component}
         </main>
       </div>
     </div>
   );
-};
-
-export default App;
+}
