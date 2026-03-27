@@ -33,6 +33,8 @@ node_modules/
 *.swo
 .DS_Store
 
-# Logs
+# Logs & runtime files
+logs/
 *.log
 celery*.pid
+.opsai_pids
