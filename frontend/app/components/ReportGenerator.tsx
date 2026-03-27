@@ -15,10 +15,10 @@ const ReportGenerator = () => {
   const [timePeriod, setTimePeriod] = useState('');
   const [generatedReport, setGeneratedReport] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [taskId, setTaskId] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [taskId, setTaskId] = useState<string | null>(null);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
@@ -36,8 +36,8 @@ const ReportGenerator = () => {
     });
 
     if (response.ok) {
-      const data = await response.json();
-      setTaskId(data.task_id);
+      const resData = await response.json();
+      setTaskId(resData.task_id);
     } else {
       setError('Failed to start report generation');
       setIsLoading(false);
@@ -48,12 +48,12 @@ const ReportGenerator = () => {
     if (taskId) {
       const interval = setInterval(async () => {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${taskId}`);
-        const data = await res.json();
-        if (data.status === 'SUCCESS') {
-          setGeneratedReport(data.result);
+        const resData = await res.json();
+        if (resData.status === 'SUCCESS') {
+          setGeneratedReport(resData.result);
           setIsLoading(false);
           clearInterval(interval);
-        } else if (data.status === 'FAILURE') {
+        } else if (resData.status === 'FAILURE') {
           setError('Report generation failed');
           setIsLoading(false);
           clearInterval(interval);

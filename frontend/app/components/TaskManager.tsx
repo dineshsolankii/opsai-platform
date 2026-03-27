@@ -8,15 +8,24 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader, Plus, Trash2 } from 'lucide-react';
 
-const TaskManager = () => {
-  const [tasks, setTasks] = useState([{ name: '' }]);
-  const [context, setContext] = useState('');
-  const [prioritizedTasks, setPrioritizedTasks] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [taskId, setTaskId] = useState(null);
+interface TaskItem {
+  name: string;
+}
 
-  const handleTaskChange = (index, value) => {
+interface TaskResult {
+  prioritized_tasks: TaskItem[];
+  suggestions: string[];
+}
+
+const TaskManager = () => {
+  const [tasks, setTasks] = useState<TaskItem[]>([{ name: '' }]);
+  const [context, setContext] = useState('');
+  const [prioritizedTasks, setPrioritizedTasks] = useState<TaskResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [taskId, setTaskId] = useState<string | null>(null);
+
+  const handleTaskChange = (index: number, value: string) => {
     const newTasks = [...tasks];
     newTasks[index].name = value;
     setTasks(newTasks);
@@ -26,12 +35,12 @@ const TaskManager = () => {
     setTasks([...tasks, { name: '' }]);
   };
 
-  const removeTask = (index) => {
+  const removeTask = (index: number) => {
     const newTasks = tasks.filter((_, i) => i !== index);
     setTasks(newTasks);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
@@ -63,7 +72,7 @@ const TaskManager = () => {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${taskId}`);
         const data = await res.json();
         if (data.status === 'SUCCESS') {
-          setPrioritizedTasks(JSON.parse(data.result));
+          setPrioritizedTasks(JSON.parse(data.result) as TaskResult);
           setIsLoading(false);
           clearInterval(interval);
         } else if (data.status === 'FAILURE') {

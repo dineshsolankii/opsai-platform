@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import WritingAssistant from '@/app/components/WritingAssistant';
 import MeetingSummarizer from '@/app/components/MeetingSummarizer';
@@ -41,7 +41,7 @@ const App = () => {
     }
   };
 
-  const NavItem = ({ agent, icon, label }) => (
+  const NavItem = ({ agent, icon, label }: { agent: string; icon: ReactNode; label: string }) => (
     <Button
       variant={activeAgent === agent ? 'secondary' : 'ghost'}
       className="w-full justify-start"

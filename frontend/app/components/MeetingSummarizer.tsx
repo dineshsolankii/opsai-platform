@@ -6,14 +6,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader } from 'lucide-react';
 
+interface MeetingSummary {
+  summary: string;
+  key_points: string[];
+  decisions: string[];
+  action_items: string[];
+}
+
 const MeetingSummarizer = () => {
   const [transcript, setTranscript] = useState('');
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary] = useState<MeetingSummary | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [taskId, setTaskId] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [taskId, setTaskId] = useState<string | null>(null);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
@@ -45,7 +52,7 @@ const MeetingSummarizer = () => {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${taskId}`);
         const data = await res.json();
         if (data.status === 'SUCCESS') {
-          setSummary(JSON.parse(data.result));
+          setSummary(JSON.parse(data.result) as MeetingSummary);
           setIsLoading(false);
           clearInterval(interval);
         } else if (data.status === 'FAILURE') {
