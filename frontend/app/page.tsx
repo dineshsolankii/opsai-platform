@@ -59,10 +59,12 @@ export default function App() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Ambient background orbs */}
-      <div className="orb orb-1" />
-      <div className="orb orb-2" />
-      <div className="orb orb-3" />
+      {/* Ambient background orbs — fixed so they don't participate in flex layout */}
+      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden" aria-hidden>
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
+      </div>
 
       {/* ── Sidebar ── */}
       <aside
