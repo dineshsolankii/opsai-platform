@@ -1,0 +1,72 @@
+services:
+  # FastAPI Web Service
+  - type: web
+    name: opsai-backend
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false          # Set manually in Render dashboard
+      - key: OPENROUTER_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: MODEL_NAME
+        value: openai/gpt-4o-mini
+      - key: DATABASE_URL
+        sync: false          # Copy "Internal Database URL" from Render Postgres instance
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: opsai-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: opsai-redis
+          type: redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true  # Render auto-generates a random value
+      - key: CORS_ORIGINS
+        sync: false          # Set to your Vercel URL: https://your-project.vercel.app
+
+  # Celery Background Worker
+  - type: worker
+    name: opsai-celery-worker
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A app.core.celery_app worker --loglevel=info --concurrency=2
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: MODEL_NAME
+        value: openai/gpt-4o-mini
+      - key: DATABASE_URL
+        sync: false
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: opsai-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: opsai-redis
+          type: redis
+          property: connectionString
+      - key: SECRET_KEY
+        sync: false          # Must match the web service SECRET_KEY exactly
+
+  # Managed Redis
+  - type: redis
+    name: opsai-redis
+    region: oregon
+    plan: free
+    maxmemoryPolicy: noeviction

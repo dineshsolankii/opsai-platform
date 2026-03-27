@@ -1,0 +1,52 @@
+This document provides a detailed explanation of the technical implementation of the OpsAI application, including the backend and frontend architectures, database schema, and asynchronous task processing.
+
+## Backend Architecture
+
+The backend is built with FastAPI and follows a modern, scalable architecture. It consists of the following key components:
+
+### 1. Database (PostgreSQL + SQLAlchemy)
+
+- **PostgreSQL**: A robust, open-source object-relational database used for data persistence.
+- **SQLAlchemy**: A Python SQL toolkit and Object-Relational Mapper (ORM) that allows us to interact with the database using Python objects (models) instead of raw SQL queries.
+- **Database Models** (`app/db/models.py`): We have two main models:
+    - `User`: Stores user information, including a unique username and a hashed password for security.
+    - `Generation`: Stores the history of AI generations. Each generation is linked to a user and includes the agent type, input data, output data, and a timestamp.
+
+### 2. Asynchronous Task Processing (Celery + Redis)
+
+- **Celery**: A distributed task queue used to run long-running tasks, such as calling the AI API, in the background. This prevents the user from having to wait for the AI to respond.
+- **Redis**: An in-memory data store used as the message broker for Celery. The FastAPI application sends tasks to Redis, and the Celery worker picks them up and executes them.
+- **Celery Tasks** (`app/api/tasks.py`): The AI API calls are wrapped in Celery tasks. The API endpoints now add a task to the queue and immediately return a `task_id` to the user.
+
+### 3. Authentication (JWT)
+
+- **JWT (JSON Web Tokens)**: Used for secure user authentication. When a user logs in, the server generates a JWT that the frontend stores and sends with each request to protected endpoints.
+- **Password Hashing**: We use `passlib` with the `bcrypt` algorithm to securely hash and verify user passwords. Passwords are never stored in plain text.
+- **Protected Endpoints**: The AI agent endpoints are protected and can only be accessed by authenticated users.
+
+## Frontend Architecture
+
+The frontend is built with Next.js 14 and has been refactored for a more professional look and feel and to support the new asynchronous backend.
+
+### 1. UI (Shadcn/UI)
+
+- **Shadcn/UI**: A collection of reusable, accessible, and customizable components built on top of Radix UI and Tailwind CSS. This allows for a more polished and professional user interface.
+- **Component-Based Design**: The UI is broken down into reusable components for each AI agent, as well as for common elements like buttons, cards, and inputs.
+
+### 2. Asynchronous Flow
+
+- **Task Polling**: When a user initiates an AI generation, the frontend now receives a `task_id` from the backend. It then periodically polls a task status endpoint (`/api/tasks/{task_id}`) to check if the task is complete.
+- **Real-Time Feedback**: The UI provides real-time feedback to the user, showing a loading state while the task is processing and displaying the result once it's available.
+
+### 3. Authentication Flow
+
+- **Login/Register Pages**: New pages have been created for user login and registration.
+- **Token Management**: The JWT received from the backend is stored in the browser's local storage and sent with each API request.
+- **Protected Routes**: The main dashboard is a protected route, and users are redirected to the login page if they are not authenticated.
+
+## Edge Cases and Testing
+
+- **Error Handling**: The backend includes robust error handling to gracefully handle issues like invalid inputs, database errors, and AI API failures.
+- **Input Validation**: Pydantic schemas are used to validate all incoming API requests, ensuring that the data is in the correct format.
+- **Authentication**: The authentication system ensures that only authorized users can access protected resources.
+- **Asynchronous Tasks**: The Celery task queue is configured to be reliable, with a result backend to store the results of completed tasks.

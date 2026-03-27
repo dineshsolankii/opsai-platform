@@ -1,0 +1,6 @@
+Problem Statement 5: AI Content & Operations Assistant
+Description: AI tool for automating daily operations and content creation.
+Agents: Writing Assistant, Meeting Summarizer, Report Generator, Task Manager.
+Features: Content generation, summaries, reports, task prioritization.
+Use Cases: College teams, clubs, admin workflows.
+Recommended Stack: Python, Next.js, MCP integrations.
